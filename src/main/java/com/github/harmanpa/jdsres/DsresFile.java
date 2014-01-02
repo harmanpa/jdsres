@@ -37,7 +37,7 @@ import java.util.Map;
  * @author pete
  */
 public class DsresFile {
-    
+
     private final Map<String, DsresVariable> variables;
 
     public DsresFile(File file) throws IOException {
@@ -51,46 +51,52 @@ public class DsresFile {
     public DsresFile(InputStream is) throws IOException {
         this(new MatfileLoader(is));
     }
-    
-    protected DsresFile(MatfileLoader loader) throws IOException {        
+
+    protected DsresFile(MatfileLoader loader) throws IOException {
         loader.fillVariables();
         List<String> mats = Arrays.asList(loader.getNames());
-        if(!mats.contains("name")
+        if (!mats.contains("Aclass")
+                || !mats.contains("name")
                 || !mats.contains("description")
                 || !mats.contains("dataInfo")
                 || !mats.contains("data_1")
                 || !mats.contains("data_2")) {
             throw new IOException("Required matrices not included, not a valid dsres file");
         }
-        String[] namestrings = toStringArray(loader.get("name"));
-        String[] descriptionstrings = toStringArray(loader.get("description"));
-        int[][] info = toIntMatrix(loader.get("dataInfo"));
+        String[] aclass = toStringArray(loader.get("Aclass"), false);
+        if (aclass.length != 4 || !"Atrajectory".equals(aclass[0]) || !"1.1".equals(aclass[1])) {
+            throw new IOException("Aclass version not supported or not a valid dsres file");
+        }
+        boolean transpose = "binTrans".equals(aclass[3]);
+        String[] namestrings = toStringArray(loader.get("name"), transpose);
+        String[] descriptionstrings = toStringArray(loader.get("description"), transpose);
+        int[][] info = toIntMatrix(loader.get("dataInfo"), transpose);
         if (namestrings.length != descriptionstrings.length || namestrings.length != info.length) {
             throw new IOException("Names and descriptions don't match");
         }
         variables = new LinkedHashMap<String, DsresVariable>(namestrings.length);
         for (int i = 0; i < namestrings.length; i++) {
-            variables.put(namestrings[i], new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i]));
+            variables.put(namestrings[i], new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i], transpose));
         }
     }
-    
+
     public final Map<String, DsresVariable> getVariables() {
         return variables;
     }
-    
+
     public final DsresVariable getVariable(String name) {
         return variables.get(name);
     }
-    
-    static String[] toStringArray(MatVar mv) {
+
+    static String[] toStringArray(MatVar mv, boolean transpose) {
         if (mv.type() == MatVar.TEXT) {
             MatText mt = (MatText) mv;
             int[] dims = mv.getDim();
-            String[] out = new String[dims[0]];
-            for (int i = 0; i < dims[0]; i++) {
-                char[] chars = new char[dims[1]];
-                for (int j = 0; j < dims[1]; j++) {
-                    chars[j] = mt.getChar(i, j);
+            String[] out = new String[dims[transpose ? 1 : 0]];
+            for (int i = 0; i < dims[transpose ? 1 : 0]; i++) {
+                char[] chars = new char[dims[transpose ? 0 : 1]];
+                for (int j = 0; j < dims[transpose ? 0 : 1]; j++) {
+                    chars[j] = mt.getChar(transpose ? j : i, transpose ? i : j);
                 }
                 out[i] = new String(chars).trim();
             }
@@ -98,14 +104,14 @@ public class DsresFile {
         }
         return new String[0];
     }
-    
-    static int[][] toIntMatrix(MatVar mv) {
+
+    static int[][] toIntMatrix(MatVar mv, boolean transpose) {
         int[] dims = mv.getDim();
-        int[][] out = new int[dims[0]][];
-        for (int i = 0; i < dims[0]; i++) {
-            int[] ints = new int[dims[1]];
-            for (int j = 0; j < dims[1]; j++) {
-                ints[j] = mv.getInt(i, j);
+        int[][] out = new int[dims[transpose ? 1 : 0]][];
+        for (int i = 0; i < dims[transpose ? 1 : 0]; i++) {
+            int[] ints = new int[dims[transpose ? 0 : 1]];
+            for (int j = 0; j < dims[transpose ? 0 : 1]; j++) {
+                ints[j] = mv.getInt(transpose ? j : i, transpose ? i : j);
             }
             out[i] = ints;
         }
@@ -133,6 +139,4 @@ public class DsresFile {
         }
         return true;
     }
-    
-    
 }

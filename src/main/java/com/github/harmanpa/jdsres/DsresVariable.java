@@ -33,12 +33,14 @@ public class DsresVariable {
     private final String name;
     private final String description;
     private final int[] info;
+    private final boolean transpose;
 
-    DsresVariable(MatfileLoader loader, String name, String description, int[] info) {
+    DsresVariable(MatfileLoader loader, String name, String description, int[] info, boolean transpose) {
         this.loader = loader;
         this.name = name;
         this.description = description;
         this.info = info;
+        this.transpose = transpose;
     }
 
     public String getName() {
@@ -69,9 +71,9 @@ public class DsresVariable {
 
     private double[] getColumn(MatVar v, int column, boolean invert) {
         int[] dims = v.getDim();
-        double[] out = new double[dims[0]];
+        double[] out = new double[dims[transpose ? 1 : 0]];
         for (int i = 0; i < out.length; i++) {
-            out[i] = (invert ? -1.0 : 1.0) * v.getDouble(i, column);
+            out[i] = (invert ? -1.0 : 1.0) * v.getDouble(transpose ? column : i, transpose ? i : column);
         }
         return out;
     }
@@ -135,6 +137,4 @@ public class DsresVariable {
         }
         return true;
     }
-    
-    
 }
