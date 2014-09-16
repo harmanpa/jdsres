@@ -65,6 +65,7 @@
                     </includes>
                     <repositoryName>jdsres</repositoryName>      <!-- github repo name -->
                     <repositoryOwner>harmanpa</repositoryOwner>    <!-- github username  -->
+                    <merge>true</merge>
                 </configuration>
                 <executions>
                     <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
