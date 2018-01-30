@@ -1,6 +1,7 @@
 /*
  * jdsres - Read Dymola / OpenModelica results in Java
  * Copyright (C) 2013 CyDesign Limited
+ * Copyright (C) 2018 CAE Tech Limited
  * Author Peter Harman
  *
  * This library is free software; you can redistribute it and/or
@@ -25,7 +26,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author pete
+ * @author Peter Harman
  */
 public class DsresVariable {
 
@@ -41,6 +42,10 @@ public class DsresVariable {
         this.description = description;
         this.info = info;
         this.transpose = transpose;
+    }
+    
+    int[] getInfo() {
+        return info;
     }
 
     public String getName() {

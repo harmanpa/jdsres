@@ -1,6 +1,7 @@
 /*
  * jdsres - Read Dymola / OpenModelica results in Java
  * Copyright (C) 2013 CyDesign Limited
+ * Copyright (C) 2018 CAE Tech Limited
  * Author Peter Harman
  *
  * This library is free software; you can redistribute it and/or
@@ -28,17 +29,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
- * @author pete
+ * @author Peter Harman
  */
 public class DsresFile {
 
     private final Map<String, DsresVariable> variables;
+    private final Map<int[], Set<DsresVariable>> aliases;
 
     public DsresFile(File file) throws IOException {
         this(new FileInputStream(file));
@@ -75,8 +80,14 @@ public class DsresFile {
             throw new IOException("Names and descriptions don't match");
         }
         variables = new LinkedHashMap<String, DsresVariable>(namestrings.length);
+        aliases = new HashMap<int[], Set<DsresVariable>>(namestrings.length);
         for (int i = 0; i < namestrings.length; i++) {
-            variables.put(namestrings[i], new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i], transpose));
+            DsresVariable variable = new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i], transpose);
+            variables.put(namestrings[i], variable);
+            if (!aliases.containsKey(info[i])) {
+                aliases.put(info[i], new HashSet<DsresVariable>());
+            }
+            aliases.get(info[i]).add(variable);
         }
     }
 
@@ -86,6 +97,24 @@ public class DsresFile {
 
     public final DsresVariable getVariable(String name) {
         return variables.get(name);
+    }
+
+    public final Set<DsresVariable> getAliases(DsresVariable of, boolean inverse) {
+        Set<DsresVariable> out;
+        if (inverse) {
+            out = aliases.get(inverseInfo(of.getInfo()));
+            if (out == null) {
+                return new HashSet<DsresVariable>(0);
+            }
+        } else {
+            out = new HashSet<DsresVariable>(aliases.get(of.getInfo()));
+            out.remove(of);
+        }
+        return out;
+    }
+
+    static int[] inverseInfo(int[] info) {
+        return new int[]{info[0], -1 * info[1]};
     }
 
     static String[] toStringArray(MatVar mv, boolean transpose) {
