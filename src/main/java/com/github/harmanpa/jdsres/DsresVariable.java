@@ -25,7 +25,8 @@ import edu.washington.biostr.sig.matfile.MatfileLoader;
 import java.util.Arrays;
 
 /**
- *
+ * Represents a single variable in a Dymola or OpenModelica simulation.
+ * 
  * @author Peter Harman
  */
 public class DsresVariable {
@@ -43,9 +44,9 @@ public class DsresVariable {
         this.info = info;
         this.transpose = transpose;
     }
-    
-    int[] getInfo() {
-        return info;
+
+    int[] getLocation() {
+        return new int[]{info[0], info[1]};
     }
 
     public String getName() {

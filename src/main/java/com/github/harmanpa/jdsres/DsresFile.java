@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Represents a .mat file used for simulation results in Dymola or OpenModelica
  *
  * @author Peter Harman
  */
@@ -84,10 +85,11 @@ public class DsresFile {
         for (int i = 0; i < namestrings.length; i++) {
             DsresVariable variable = new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i], transpose);
             variables.put(namestrings[i], variable);
+
             if (!aliases.containsKey(info[i])) {
-                aliases.put(info[i], new HashSet<DsresVariable>());
+                aliases.put(new int[]{info[i][0], info[i][1]}, new HashSet<DsresVariable>());
             }
-            aliases.get(info[i]).add(variable);
+            aliases.get(new int[]{info[i][0], info[i][1]}).add(variable);
         }
     }
 
@@ -102,18 +104,18 @@ public class DsresFile {
     public final Set<DsresVariable> getAliases(DsresVariable of, boolean inverse) {
         Set<DsresVariable> out;
         if (inverse) {
-            out = aliases.get(inverseInfo(of.getInfo()));
+            out = aliases.get(inverseLocation(of.getLocation()));
             if (out == null) {
                 return new HashSet<DsresVariable>(0);
             }
         } else {
-            out = new HashSet<DsresVariable>(aliases.get(of.getInfo()));
+            out = new HashSet<DsresVariable>(aliases.get(of.getLocation()));
             out.remove(of);
         }
         return out;
     }
 
-    static int[] inverseInfo(int[] info) {
+    static int[] inverseLocation(int[] info) {
         return new int[]{info[0], -1 * info[1]};
     }
 
