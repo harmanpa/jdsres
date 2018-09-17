@@ -20,170 +20,165 @@
 package edu.washington.biostr.sig.matfile;
 
 /**
- * <p>Title: Brain Visualizer</p>
- * <p>Description: Displays and allows manipulation of 3d brain models</p>
- * <p>Copyright: Copyright (c) 2002</p>
- * <p>Company: Structural Informatics Group</p>
+ * <p>
+ * Title: Brain Visualizer</p>
+ * <p>
+ * Description: Displays and allows manipulation of 3d brain models</p>
+ * <p>
+ * Copyright: Copyright (c) 2002</p>
+ * <p>
+ * Company: Structural Informatics Group</p>
+ *
  * @author Eider Moore
  * @version 1.0
  */
-
 public class MatInt8
-    extends MatVar
-{
-   private byte[] data;
-   private byte[] imag;
+        extends MatVar {
 
-   public MatInt8(String name, int[] dim, int imagf)
-   {
-      this(name, dim, imagf != 0);
-   }
+    private byte[] data;
+    private byte[] imag;
 
-   public MatInt8(String name, int[] dim, boolean imagf)
-   {
-      super(name, dim);
-      int size = 1;
-      for (int i = 0; i < dim.length; i++)
-      {
-         size *= dim[i];
-      }
-      data = new byte[size];
-      if (imagf)
-      {
-         imag = new byte[size];
-      }
-   }
+    public MatInt8(String name, int[] dim, int imagf) {
+        this(name, dim, imagf != 0);
+    }
 
-   /**
-    * returns the int at that location converted to a positive integer.  We
-    * need to increase the size to a short in order to pull this off.
-    * This is the most natural call for this class.
-    * @param index the index as an array of ints
-    * @return returns a int at the specified index.
-    */
-   public byte getByte(int[] index)
-   {
-      int i = getIndex(index);
-      byte num = data[i];
-      return num;
-   }
+    public MatInt8(String name, int[] dim, boolean imagf) {
+        super(name, dim);
+        int size = 1;
+        for (int i = 0; i < dim.length; i++) {
+            size *= dim[i];
+        }
+        data = new byte[size];
+        if (imagf) {
+            imag = new byte[size];
+        }
+    }
 
-   public int getInt(int... i)
-   {
-      return getByte(i);
-   }
+    /**
+     * returns the int at that location converted to a positive integer. We need
+     * to increase the size to a short in order to pull this off. This is the
+     * most natural call for this class.
+     *
+     * @param index the index as an array of ints
+     * @return returns a int at the specified index.
+     */
+    public byte getByte(int[] index) {
+        int i = getIndex(index);
+        byte num = data[i];
+        return num;
+    }
 
-   public double getDouble(int... i)
-   {
-      return getByte(i);
-   }
+    @Override
+    public int getInt(int... i) {
+        return getByte(i);
+    }
 
-   public byte getImag(int[] index)
-   {
-      int i = getIndex(index);
-      byte num = imag[i];
-      return num;
-   }
+    @Override
+    public double getDouble(int... i) {
+        return getByte(i);
+    }
 
-   public boolean containsImaginary()
-   {
-      return (imag != null);
-   }
+    public byte getImag(int[] index) {
+        int i = getIndex(index);
+        byte num = imag[i];
+        return num;
+    }
 
-   public Byte getImaginary(int... loc)
-   {
-      if (containsImaginary())
-      {
-         return new Byte(getImag(loc));
-      }
-      else
-      {
-         return new Byte( (byte) 0);
-      }
-   }
+    @Override
+    public boolean containsImaginary() {
+        return (imag != null);
+    }
 
-   /**
-    * Returns a Double with the value stored in index.
-    * @param index the index of the value
-    * @return a Double with the value.
-    */
-   public Byte getData(int... index)
-   {
-      return getNumber(index);
-   }
+    @Override
+    public Byte getImaginary(int... loc) {
+        if (containsImaginary()) {
+            return getImag(loc);
+        } else {
+            return (byte) 0;
+        }
+    }
 
-   /**
-    * Returns a Integer with the value stored in index.
-    * @param index the index of the value
-    * @return a Double with the value.
-    */
-   public Byte getNumber(int... index)
-   {
-      Byte answer = new Byte(getByte(index));
-      return answer;
-   }
+    /**
+     * Returns a Double with the value stored in index.
+     *
+     * @param index the index of the value
+     * @return a Double with the value.
+     */
+    @Override
+    public Byte getData(int... index) {
+        return getNumber(index);
+    }
 
-   /**
-    * Everything in a MatInt32 can be returned as a number and none
-    * can be returned as a MatVar.
-    * @param index not used
-    * @return true
-    */
-   public boolean isNumber(int... index)
-   {
-      return true;
-   }
+    /**
+     * Returns a Integer with the value stored in index.
+     *
+     * @param index the index of the value
+     * @return a Double with the value.
+     */
+    @Override
+    public Byte getNumber(int... index) {
+        Byte answer = getByte(index);
+        return answer;
+    }
 
-   public MatVar getMatVar(int... index)
-   {
-      throw new java.lang.UnsupportedOperationException();
-   }
+    /**
+     * Everything in a MatInt32 can be returned as a number and none can be
+     * returned as a MatVar.
+     *
+     * @param index not used
+     * @return true
+     */
+    @Override
+    public boolean isNumber(int... index) {
+        return true;
+    }
 
-   public int type()
-   {
-      return UINT8;
-   }
+    @Override
+    public MatVar getMatVar(int... index) {
+        throw new java.lang.UnsupportedOperationException();
+    }
 
-   public void putAll(byte[] values)
-   {
-      this.data = values;
-   }
+    @Override
+    public int type() {
+        return UINT8;
+    }
 
-   public void putAllImage(byte[] values)
-   {
-      this.imag = values;
-   }
+    public void putAll(byte[] values) {
+        this.data = values;
+    }
 
-   public void putValue(int[] index, byte value)
-   {
-      int i = getIndex(index);
-      data[i] = value;
-   }
+    public void putAllImage(byte[] values) {
+        this.imag = values;
+    }
 
-   public void putImagValue(int[] index, byte value)
-   {
-      int i = getIndex(index);
-      imag[i] = value;
-   }
+    public void putValue(int[] index, byte value) {
+        int i = getIndex(index);
+        data[i] = value;
+    }
 
-   protected void setDouble(int index, double value)
-   {
-      data[index] = (byte) value;
-   }
+    public void putImagValue(int[] index, byte value) {
+        int i = getIndex(index);
+        imag[i] = value;
+    }
 
-   protected void setLong(int index, long value)
-   {
-      data[index] = (byte) value;
-   }
+    @Override
+    protected void setDouble(int index, double value) {
+        data[index] = (byte) value;
+    }
 
-   protected void setDoubleImag(int index, double value)
-   {
-      imag[index] = (byte) value;
-   }
+    @Override
+    protected void setLong(int index, long value) {
+        data[index] = (byte) value;
+    }
 
-   protected void setLongImag(int index, long value)
-   {
-      imag[index] = (byte) value;
-   }
+    @Override
+    protected void setDoubleImag(int index, double value) {
+        imag[index] = (byte) value;
+    }
+
+    @Override
+    protected void setLongImag(int index, long value) {
+        imag[index] = (byte) value;
+    }
 
 }

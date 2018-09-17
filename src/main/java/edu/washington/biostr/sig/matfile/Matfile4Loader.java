@@ -64,7 +64,7 @@ class Matfile4Loader
     public static final int T_TEXT = 1;
     public static final int T_SPARSE = 2;
 
-    private ByteBuffer bBuf;
+    private final ByteBuffer bBuf;
 
     protected Matfile4Loader(ByteBuffer bBuf) {
         this.bBuf = bBuf;
@@ -114,6 +114,7 @@ class Matfile4Loader
      */
     // some variables are not used but will help people to extend this without reading the spec.
     @SuppressWarnings("unused")
+    @Override
     protected MatVar loadNext() {
         if (bBuf.remaining() <= 20) {
             return null;

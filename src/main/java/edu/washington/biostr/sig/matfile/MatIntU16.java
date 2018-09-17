@@ -20,213 +20,208 @@
 package edu.washington.biostr.sig.matfile;
 
 /**
- * <p>Title: Brain Visualizer</p>
- * <p>Description: Displays and allows manipulation of 3d brain models</p>
- * <p>Copyright: Copyright (c) 2002</p>
- * <p>Company: Structural Informatics Group</p>
- * <p> This is a MatVar that specifically is designed to store Unsigned 16 bit
- * ints.  It can only hold integers and integers with imaginary components.
+ * <p>
+ * Title: Brain Visualizer</p>
+ * <p>
+ * Description: Displays and allows manipulation of 3d brain models</p>
+ * <p>
+ * Copyright: Copyright (c) 2002</p>
+ * <p>
+ * Company: Structural Informatics Group</p>
+ * <p>
+ * This is a MatVar that specifically is designed to store Unsigned 16 bit ints.
+ * It can only hold integers and integers with imaginary components.
  * </p>
+ *
  * @author Eider Moore
  * @version 1.0
  */
 public class MatIntU16
-    extends MatVar
-{
-   private char[] data;
-   private char[] imag;
+        extends MatVar {
 
-   public MatIntU16(String name, int[] dim, int imagf)
-   {
-      this(name, dim, imagf != 0);
-   }
+    private char[] data;
+    private char[] imag;
 
-   /**
-    * Create a new MatInt32.
-    * @param name The name.
-    * @param dim The dimensions.
-    * @param imagf Whether or not to have imaginary numbers, if 0 we have no
-    * imaginary numbers, otherwise we have imaginary numbers.
-    */
-   public MatIntU16(String name, int[] dim, boolean imagf)
-   {
-      super(name, dim);
-      int size = 1;
-      for (int i = 0; i < dim.length; i++)
-      {
-         size *= dim[i];
-      }
-      data = new char[size];
-      if (imagf)
-      {
-         imag = new char[size];
-      }
-   }
+    public MatIntU16(String name, int[] dim, int imagf) {
+        this(name, dim, imagf != 0);
+    }
 
-   /**
-    * returns the int at that location converted to a positive integer.  We
-    * need to increase the size to a long in order to pull this off.
-    * This is the most natural call for this function.
-    * @param index the index as an array of ints
-    * @return returns a int at the specified index.
-    */
-   public int getUShort(int[] index)
-   {
-      int i = getIndex(index);
-      int num = data[i];
-      if (num > 0)
-      {
-         return num;
-      }
-      else
-      {
-         return num;
-      }
-   }
+    /**
+     * Create a new MatInt32.
+     *
+     * @param name The name.
+     * @param dim The dimensions.
+     * @param imagf Whether or not to have imaginary numbers, if 0 we have no
+     * imaginary numbers, otherwise we have imaginary numbers.
+     */
+    public MatIntU16(String name, int[] dim, boolean imagf) {
+        super(name, dim);
+        int size = 1;
+        for (int i = 0; i < dim.length; i++) {
+            size *= dim[i];
+        }
+        data = new char[size];
+        if (imagf) {
+            imag = new char[size];
+        }
+    }
 
-   public int getInt(int... i)
-   {
-      return getUShort(i);
-   }
+    /**
+     * returns the int at that location converted to a positive integer. We need
+     * to increase the size to a long in order to pull this off. This is the
+     * most natural call for this function.
+     *
+     * @param index the index as an array of ints
+     * @return returns a int at the specified index.
+     */
+    public int getUShort(int[] index) {
+        int i = getIndex(index);
+        int num = data[i];
+        if (num > 0) {
+            return num;
+        } else {
+            return num;
+        }
+    }
 
-   public double getDouble(int... i)
-   {
-      return getUShort(i);
-   }
+    @Override
+    public int getInt(int... i) {
+        return getUShort(i);
+    }
 
-   /**
-    * returns the int at that location converted to a positive integer.  We
-    * need to increase the size to a long in order to pull this off.
-    * This is the most natural call for this function.
-    * @param index the index as an array of ints
-    * @return returns a int at the specified index.
-    */
-   public int getImag(int[] index)
-   {
-      int i = getIndex(index);
-      int num = imag[i];
-      if (num > 0)
-      {
-         return num;
-      }
-      else
-      {
-         // the maximum value is 2^16 = 65536
-         // I'm assuming 2's compliment
-         num = (65536 + num);
-         return num;
-      }
-   }
+    @Override
+    public double getDouble(int... i) {
+        return getUShort(i);
+    }
 
-   /**
-    * Whether or not this contains imaginary numbers.
-    * @return True if it contains imaginary numbers.
-    */
-   public boolean containsImaginary()
-   {
-      return (imag != null);
-   }
+    /**
+     * returns the int at that location converted to a positive integer. We need
+     * to increase the size to a long in order to pull this off. This is the
+     * most natural call for this function.
+     *
+     * @param index the index as an array of ints
+     * @return returns a int at the specified index.
+     */
+    public int getImag(int[] index) {
+        int i = getIndex(index);
+        int num = imag[i];
+        if (num > 0) {
+            return num;
+        } else {
+            // the maximum value is 2^16 = 65536
+            // I'm assuming 2's compliment
+            num = (65536 + num);
+            return num;
+        }
+    }
 
-   /**
-    * returns the imaginary component at that location converted to a positive
-    * integer.  We need to increase the size to a long in order to pull this
-    * off.  This is the most natural call for this function.
-    * @param index the index as an array of ints
-    * @return returns a int at the specified index.
-    */
-   public Integer getImaginary(int... loc)
-   {
-      if (containsImaginary())
-      {
-         return new Integer(getImag(loc));
-      }
-      else
-      {
-         return new Integer( (short) 0);
-      }
-   }
+    /**
+     * Whether or not this contains imaginary numbers.
+     *
+     * @return True if it contains imaginary numbers.
+     */
+    @Override
+    public boolean containsImaginary() {
+        return (imag != null);
+    }
 
-   /**
-    * Returns a Integer with the value stored in index.
-    * @param index the index of the value
-    * @return a Integer with the value.
-    */
-   public Integer getData(int... index)
-   {
-      return getNumber(index);
-   }
+    /**
+     * returns the imaginary component at that location converted to a positive
+     * integer. We need to increase the size to a long in order to pull this
+     * off. This is the most natural call for this function.
+     *
+     * @param loc the index as an array of ints
+     * @return returns a int at the specified index.
+     */
+    @Override
+    public Integer getImaginary(int... loc) {
+        if (containsImaginary()) {
+            return getImag(loc);
+        } else {
+            return 0;
+        }
+    }
 
-   /**
-    * Returns a Integer with the value stored in index.
-    * @param index the index of the value
-    * @return a Double with the value.
-    */
-   public Integer getNumber(int... index)
-   {
-      Integer answer = new Integer(getUShort(index));
-      return answer;
-   }
+    /**
+     * Returns a Integer with the value stored in index.
+     *
+     * @param index the index of the value
+     * @return a Integer with the value.
+     */
+    @Override
+    public Integer getData(int... index) {
+        return getNumber(index);
+    }
 
-   /**
-    * Everything in a MatInt32 can be returned as a number and none
-    * can be returned as a MatVar.
-    * @param index not used
-    * @return true
-    */
-   public boolean isNumber(int... index)
-   {
-      return true;
-   }
+    /**
+     * Returns a Integer with the value stored in index.
+     *
+     * @param index the index of the value
+     * @return a Double with the value.
+     */
+    @Override
+    public Integer getNumber(int... index) {
+        Integer answer = getUShort(index);
+        return answer;
+    }
 
-   public MatVar getMatVar(int... index)
-   {
-      throw new java.lang.UnsupportedOperationException();
-   }
+    /**
+     * Everything in a MatInt32 can be returned as a number and none can be
+     * returned as a MatVar.
+     *
+     * @param index not used
+     * @return true
+     */
+    @Override
+    public boolean isNumber(int... index) {
+        return true;
+    }
 
-   public int type()
-   {
-      return UINT16;
-   }
+    @Override
+    public MatVar getMatVar(int... index) {
+        throw new java.lang.UnsupportedOperationException();
+    }
 
-   public void putAll(char[] values)
-   {
-      this.data = values;
-   }
+    @Override
+    public int type() {
+        return UINT16;
+    }
 
-   public void putAllImage(char[] values)
-   {
-      this.imag = values;
-   }
+    public void putAll(char[] values) {
+        this.data = values;
+    }
 
-   public void putValue(int[] index, char value)
-   {
-      int i = getIndex(index);
-      data[i] = value;
-   }
+    public void putAllImage(char[] values) {
+        this.imag = values;
+    }
 
-   public void putImagValue(int[] index, char value)
-   {
-      int i = getIndex(index);
-      imag[i] = value;
-   }
+    public void putValue(int[] index, char value) {
+        int i = getIndex(index);
+        data[i] = value;
+    }
 
-   protected void setDouble(int index, double value)
-   {
-      data[index] = (char) value;
-   }
+    public void putImagValue(int[] index, char value) {
+        int i = getIndex(index);
+        imag[i] = value;
+    }
 
-   protected void setLong(int index, long value)
-   {
-      data[index] = (char) value;
-   }
+    @Override
+    protected void setDouble(int index, double value) {
+        data[index] = (char) value;
+    }
 
-   protected void setDoubleImag(int index, double value)
-   {
-      imag[index] = (char) value;
-   }
+    @Override
+    protected void setLong(int index, long value) {
+        data[index] = (char) value;
+    }
 
-   protected void setLongImag(int index, long value)
-   {
-      imag[index] = (char) value;
-   }
+    @Override
+    protected void setDoubleImag(int index, double value) {
+        imag[index] = (char) value;
+    }
+
+    @Override
+    protected void setLongImag(int index, long value) {
+        imag[index] = (char) value;
+    }
 }

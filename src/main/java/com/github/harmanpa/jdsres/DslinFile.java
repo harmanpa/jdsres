@@ -29,94 +29,87 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 
 /**
- * Represents a .mat file used for simulation results in Dymola or OpenModelica
+ * Represents a .mat file used for linearization results in Dymola
  *
  * @author Peter Harman
  */
-public class DsresFile {
+public class DslinFile {
 
-    private final Map<String, DsresVariable> variables;
-    private final Map<int[], Set<DsresVariable>> aliases;
+    private final MatfileLoader loader;
+    private final int nx;
+    private final boolean transpose;
+    private final String[] names;
 
-    public DsresFile(File file) throws IOException {
+    public DslinFile(File file) throws IOException {
         this(new FileInputStream(file));
     }
 
-    public DsresFile(URL url) throws IOException {
+    public DslinFile(URL url) throws IOException {
         this(new MatfileLoader(url));
     }
 
-    public DsresFile(InputStream is) throws IOException {
+    public DslinFile(InputStream is) throws IOException {
         this(new MatfileLoader(is));
     }
 
-    protected DsresFile(MatfileLoader loader) throws IOException {
+    protected DslinFile(MatfileLoader loader) throws IOException {
+        this.loader = loader;
         loader.fillVariables();
         List<String> mats = Arrays.asList(loader.getNames());
         if (!mats.contains("Aclass")
-                || !mats.contains("name")
-                || !mats.contains("description")
-                || !mats.contains("dataInfo")
-                || !mats.contains("data_1")
-                || !mats.contains("data_2")) {
-            throw new IOException("Required matrices not included, not a valid dsres file");
+                || !mats.contains("xuyName")
+                || !mats.contains("nx")
+                || !mats.contains("ABCD")) {
+            throw new IOException("Required matrices not included, not a valid dslin file");
         }
         String[] aclass = toStringArray(loader.get("Aclass"), false);
-        if (aclass.length != 4 || !"Atrajectory".equals(aclass[0]) || !"1.1".equals(aclass[1])) {
-            throw new IOException("Aclass version not supported or not a valid dsres file");
+        if (aclass.length != 4 || !"AlinearSystem".equals(aclass[0]) || !"1.0".equals(aclass[1])) {
+            throw new IOException("Aclass version not supported or not a valid dslin file");
         }
-        boolean transpose = "binTrans".equals(aclass[3]);
-        String[] namestrings = toStringArray(loader.get("name"), transpose);
-        String[] descriptionstrings = toStringArray(loader.get("description"), transpose);
-        int[][] info = toIntMatrix(loader.get("dataInfo"), transpose);
-        if (namestrings.length != descriptionstrings.length || namestrings.length != info.length) {
-            throw new IOException("Names and descriptions don't match");
-        }
-        variables = new LinkedHashMap<>(namestrings.length);
-        aliases = new HashMap<>(namestrings.length);
-        for (int i = 0; i < namestrings.length; i++) {
-            DsresVariable variable = new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i], transpose);
-            variables.put(namestrings[i], variable);
+        transpose = "binTrans".equals(aclass[3]);
+        names = toStringArray(loader.get("xuyName"), transpose);
+        nx = toIntMatrix(loader.get("nx"), transpose)[0][0];
 
-            if (!aliases.containsKey(info[i])) {
-                aliases.put(new int[]{info[i][0], info[i][1]}, new HashSet<>());
-            }
-            aliases.get(new int[]{info[i][0], info[i][1]}).add(variable);
-        }
     }
 
-    public final Map<String, DsresVariable> getVariables() {
-        return variables;
+    public final DslinMatrix getA() {
+        return new DslinMatrix(loader, "A", nx, transpose);
     }
 
-    public final DsresVariable getVariable(String name) {
-        return variables.get(name);
+    public final DslinMatrix getB() {
+        return new DslinMatrix(loader, "B", nx, transpose);
     }
 
-    public final Set<DsresVariable> getAliases(DsresVariable of, boolean inverse) {
-        Set<DsresVariable> out;
-        if (inverse) {
-            out = aliases.get(inverseLocation(of.getLocation()));
-            if (out == null) {
-                return new HashSet<>(0);
-            }
-        } else {
-            out = new HashSet<>(aliases.get(of.getLocation()));
-            out.remove(of);
-        }
-        return out;
+    public final DslinMatrix getC() {
+        return new DslinMatrix(loader, "C", nx, transpose);
     }
 
-    static int[] inverseLocation(int[] info) {
-        return new int[]{info[0], -1 * info[1]};
+    public final DslinMatrix getD() {
+        return new DslinMatrix(loader, "D", nx, transpose);
+    }
+
+    public final DslinMatrix getABCD() {
+        return new DslinMatrix(loader, "ABCD", nx, transpose);
+    }
+
+    public final int getNx() {
+        return nx;
+    }
+
+    public final int getNu() {
+        return loader.get("ABCD").getDim()[0] - nx;
+    }
+
+    public final int getNy() {
+        return loader.get("ABCD").getDim()[1] - nx;
+    }
+
+    public final String[] getNames() {
+        return names;
     }
 
     static String[] toStringArray(MatVar mv, boolean transpose) {
@@ -152,19 +145,31 @@ public class DsresFile {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + (this.variables != null ? this.variables.hashCode() : 0);
+        hash = 41 * hash + Objects.hashCode(this.loader);
+        hash = 41 * hash + this.nx;
+        hash = 41 * hash + (this.transpose ? 1 : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final DsresFile other = (DsresFile) obj;
-        return !(this.variables != other.variables && (this.variables == null || !this.variables.equals(other.variables)));
+        final DslinFile other = (DslinFile) obj;
+        if (this.nx != other.nx) {
+            return false;
+        }
+        if (this.transpose != other.transpose) {
+            return false;
+        }
+        return Objects.equals(this.loader, other.loader);
     }
+
 }

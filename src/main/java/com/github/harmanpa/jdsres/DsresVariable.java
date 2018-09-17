@@ -138,9 +138,6 @@ public class DsresVariable {
         if ((this.description == null) ? (other.description != null) : !this.description.equals(other.description)) {
             return false;
         }
-        if (!Arrays.equals(this.info, other.info)) {
-            return false;
-        }
-        return true;
+        return Arrays.equals(this.info, other.info);
     }
 }

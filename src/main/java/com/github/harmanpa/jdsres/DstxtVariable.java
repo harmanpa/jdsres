@@ -77,6 +77,7 @@ public class DstxtVariable {
         if ("double".equals(type)) {
             double[][] out = new double[rows][];
             for (int row = 0; row < rows; row++) {
+                out[row] = new double[columns];
                 System.arraycopy((double[]) data.get(row), 0, out[row], 0, columns);
             }
             return out;
@@ -94,6 +95,7 @@ public class DstxtVariable {
         if ("int".equals(type)) {
             int[][] out = new int[rows][];
             for (int row = 0; row < rows; row++) {
+                out[row] = new int[columns];
                 System.arraycopy((int[]) data.get(row), 0, out[row], 0, columns);
             }
             return out;
@@ -153,10 +155,7 @@ public class DstxtVariable {
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (!Objects.equals(this.data, other.data)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.data, other.data);
     }
 
     @Override
