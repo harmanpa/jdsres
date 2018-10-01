@@ -44,7 +44,7 @@ import java.util.Set;
 public class DsresFile {
 
     private final Map<String, DsresVariable> variables;
-    private final Map<int[], Set<DsresVariable>> aliases;
+    private final Map<Location, Set<DsresVariable>> aliases;
 
     public DsresFile(File file) throws IOException {
         this(new FileInputStream(file));
@@ -86,10 +86,10 @@ public class DsresFile {
             DsresVariable variable = new DsresVariable(loader, namestrings[i], descriptionstrings[i], info[i], transpose);
             variables.put(namestrings[i], variable);
 
-            if (!aliases.containsKey(info[i])) {
-                aliases.put(new int[]{info[i][0], info[i][1]}, new HashSet<>());
+            if (!aliases.containsKey(new Location(info[i][0], info[i][1]))) {
+                aliases.put(new Location(info[i][0], info[i][1]), new HashSet<>());
             }
-            aliases.get(new int[]{info[i][0], info[i][1]}).add(variable);
+            aliases.get(new Location(info[i][0], info[i][1])).add(variable);
         }
     }
 
@@ -104,19 +104,19 @@ public class DsresFile {
     public final Set<DsresVariable> getAliases(DsresVariable of, boolean inverse) {
         Set<DsresVariable> out;
         if (inverse) {
-            out = aliases.get(inverseLocation(of.getLocation()));
+            out = aliases.get(inverseLocation(new Location(of.getLocation())));
             if (out == null) {
                 return new HashSet<>(0);
             }
         } else {
-            out = new HashSet<>(aliases.get(of.getLocation()));
+            out = new HashSet<>(aliases.get(new Location(of.getLocation())));
             out.remove(of);
         }
         return out;
     }
 
-    static int[] inverseLocation(int[] info) {
-        return new int[]{info[0], -1 * info[1]};
+    static Location inverseLocation(Location loc) {
+        return new Location(loc.getA(), -1 * loc.getB());
     }
 
     static String[] toStringArray(MatVar mv, boolean transpose) {
@@ -166,5 +166,55 @@ public class DsresFile {
         }
         final DsresFile other = (DsresFile) obj;
         return !(this.variables != other.variables && (this.variables == null || !this.variables.equals(other.variables)));
+    }
+
+    static class Location {
+
+        private final int a;
+        private final int b;
+
+        Location(int a, int b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        Location(int[] ab) {
+            this(ab[0], ab[1]);
+        }
+
+        public int getA() {
+            return a;
+        }
+
+        public int getB() {
+            return b;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 23 * hash + this.a;
+            hash = 23 * hash + this.b;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Location other = (Location) obj;
+            if (this.a != other.a) {
+                return false;
+            }
+            return this.b == other.b;
+        }
+
     }
 }
