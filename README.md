@@ -20,6 +20,6 @@ and
     <dependency>
         <groupId>com.github.harmanpa</groupId>
         <artifactId>jdsres</artifactId>
-        <version>v1.2.0</version>
+        <version>v1.2.1</version>
     </dependency>
 ```
